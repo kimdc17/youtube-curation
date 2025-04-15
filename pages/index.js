@@ -55,4 +55,4 @@ export default function Home({ videos }) {
       </main>
     </div>
   );
-}
+}console.log("✅ 강제 배포 확인 로그");
