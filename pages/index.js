@@ -1,58 +1,62 @@
+import { useEffect, useState } from 'react';
 import Head from 'next/head';
-import { fetchVideos } from '../utils/fetchVideos';
 
-export async function getServerSideProps() {
-  try {
-    const videos = await fetchVideos();
-    return { props: { videos: videos || [] } };
-  } catch (error) {
-    console.error("🚨 API fetch 실패:", error);
-    return { props: { videos: [] } };
-  }
-}
+export default function Home() {
+  const [videos, setVideos] = useState([]);
+  const [error, setError] = useState(false);
 
-export default function Home({ videos }) {
+  useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        const apiKey = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
+        const res = await fetch(
+          `https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&regionCode=KR&maxResults=10&key=${apiKey}`
+        );
+        const data = await res.json();
+        if (data.items) {
+          setVideos(data.items);
+        } else {
+          setError(true);
+        }
+      } catch (err) {
+        setError(true);
+      }
+    };
+
+    fetchVideos();
+  }, []);
+
   return (
     <div>
       <Head>
-        <title>유튜브 인기 영상 모음</title>
-        <meta name="description" content="실시간 대한민국 유튜브 인기 영상 큐레이션" />
+        <title>🔥 유튜브 인기 영상</title>
       </Head>
-
       <main className="p-6">
-        <h1 className="text-2xl font-bold mb-6">🔥 지금 대한민국에서 인기 있는 유튜브 영상</h1>
-
-        {videos.length === 0 ? (
-          <div className="text-red-500">
-            <p>😢 데이터를 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.</p>
-          </div>
+        <h1 className="text-2xl font-bold mb-4">📺 실시간 유튜브 인기 영상</h1>
+        {error ? (
+          <p className="text-red-500">❌ 데이터를 불러올 수 없습니다.</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {videos.map((video) => {
-              const { id, snippet } = video;
-              if (!snippet) return null;
-
-              return (
-                <a
-                  key={id}
-                  href={`https://www.youtube.com/watch?v=${id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="border rounded-lg shadow hover:shadow-lg transition p-3 bg-white"
-                >
-                  <img
-                    src={snippet.thumbnails.medium.url}
-                    alt={snippet.title}
-                    className="rounded mb-2 w-full"
-                  />
-                  <h2 className="font-semibold text-base">{snippet.title}</h2>
-                  <p className="text-sm text-gray-500">{snippet.channelTitle}</p>
-                </a>
-              );
-            })}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {videos.map((video) => (
+              <a
+                key={video.id}
+                href={`https://www.youtube.com/watch?v=${video.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border p-3 rounded shadow hover:bg-gray-100 transition"
+              >
+                <img
+                  src={video.snippet?.thumbnails?.medium?.url}
+                  alt={video.snippet?.title}
+                  className="w-full rounded mb-2"
+                />
+                <h2 className="font-semibold">{video.snippet?.title}</h2>
+                <p className="text-sm text-gray-500">{video.snippet?.channelTitle}</p>
+              </a>
+            ))}
           </div>
         )}
       </main>
     </div>
   );
-}console.log("✅ 강제 배포 확인 로그");
+}
