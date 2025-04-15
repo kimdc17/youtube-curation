@@ -7,9 +7,10 @@ export async function fetchVideos() {
     const res = await fetch(apiUrl);
     const data = await res.json();
 
-    console.log("📦 API 응답:", data); // ✅ 응답 로그 추가
+    console.log("📦 API 응답:", data); // ✅ return 전에 위치
 
     if (!data.items) {
+      console.error("❌ YouTube API 응답 오류:", data);
       return [];
     }
 
