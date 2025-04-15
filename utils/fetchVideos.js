@@ -1,12 +1,21 @@
 export async function fetchVideos() {
-  const apiKey = process.env.YOUTUBE_API_KEY;
-  console.log("✅ [확인용] API KEY:", apiKey); // 이 줄 꼭 추가!
-  
-  const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&regionCode=KR&maxResults=10&key=${apiKey}`;
-  const res = await fetch(apiUrl);
-  const data = await res.json();
+  try {
+    const apiKey = process.env.YOUTUBE_API_KEY;
+    console.log("✅ API KEY:", apiKey);
 
-  console.log("✅ [확인용] API 응답 데이터:", data);
+    const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&regionCode=KR&maxResults=10&key=${apiKey}`;
+    const res = await fetch(apiUrl);
+    const data = await res.json();
 
-  return data.items;
+    console.log("📦 API 응답:", data); // ✅ 응답 로그 추가
+
+    if (!data.items) {
+      return [];
+    }
+
+    return data.items;
+  } catch (error) {
+    console.error("❌ fetchVideos 오류:", error);
+    return [];
+  }
 }
